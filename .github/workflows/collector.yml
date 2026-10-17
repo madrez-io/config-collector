@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: config-collector
@@ -20,6 +20,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -28,16 +30,21 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install requests beautifulsoup4
+          python -m pip install requests beautifulsoup4
 
       - name: Run collector
         run: python -u main.py
 
-      - name: Upload results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: configs-${{ github.run_number }}
-          path: configs.txt
-          if-no-files-found: warn
-          retention-days: 7
+      - name: Commit and push configs.txt
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add configs.txt
+
+          if git diff --cached --quiet; then
+            echo "No changes to configs.txt"
+          else
+            git commit -m "Update collected configurations"
+            git push
+          fi
