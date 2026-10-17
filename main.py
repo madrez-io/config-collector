@@ -12,7 +12,7 @@ CHANNELS = [
     "FreakConfig",
 ]
 
-TARGET = 250
+TARGET = 500
 OUTPUT_FILE = "configs.txt"
 REQUEST_DELAY = 1
 
